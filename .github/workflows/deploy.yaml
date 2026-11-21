@@ -31,7 +31,8 @@ jobs:
         run: |
           set -euo pipefail
           image_prefix="ghcr.io/${GITHUB_REPOSITORY,,}"
-          export DOCKER_CONFIG="$(mktemp -d)"
+          DOCKER_CONFIG="$(mktemp -d)"
+          export DOCKER_CONFIG
           trap 'docker logout ghcr.io >/dev/null 2>&1 || true; rm -rf "$DOCKER_CONFIG"' EXIT
           printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
           IMAGE_PREFIX="$image_prefix" IMAGE_TAG="$IMAGE_TAG" docker compose -f deploy/compose.app.yaml pull
