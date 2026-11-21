@@ -23,3 +23,12 @@ output "rds_endpoint" {
 output "artifact_bucket" {
   value = module.artifact_bucket.name
 }
+
+# S1 outputs listed in contracts/platform.yaml.
+output "redshift_cluster_id" {
+  value = module.redshift.cluster_id
+}
+
+output "redshift_database" {
+  value = module.redshift.database
+}
