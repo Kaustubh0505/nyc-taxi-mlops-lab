@@ -26,3 +26,9 @@ S6 adds the `wiki_*` assets. Jobs: `ingest_month` (the sensor's, one month to th
 **Tests:** `make test-pipelines` (fake Redshift and S3, no AWS). **Image:** `docker build -f pipelines/Dockerfile .` from the repo root (it reads `contracts/`). **Runtime:** `deploy/compose.platform.yaml` on the platform host; `dagster.yaml` keeps run storage in the `dagster` database on RDS, runs two at a time, and lets one Redshift-writing step run at a time (pool `redshift`).
 
 **Local UI without AWS resources:** `cd pipelines && uv run dagster dev -m labpipes.definitions` shows the asset graph. Materializing needs Redshift and the bucket, so set `REDSHIFT_CLUSTER_ID=lab REDSHIFT_DATABASE=lab REDSHIFT_DB_USER=labadmin LAB_DATA_BUCKET=<bucket>` with Learner Lab credentials exported.
+
+### S2 training and the latency budget
+
+The `trip_ingest_job` materializes `trip_features` for each month and runs its blocking schema check. Materialize January through April 2024 before running `train_model`. The job exports the January–March training rows, April holdout rows and a distance lookup derived only from the training months. It compares the candidate to the current champion, or the v1 baseline if there is no champion, on the same holdout. An improvement of at least 5% in MAE and a p95 below the configured budget are both required.
+
+The latency budget has no default: run the evaluation to obtain `reference_p95_latency_ms` in MLflow and choose a budget based on that measurement. Set the repository variable `LAB_MAX_P95_LATENCY_MS` to the chosen budget and redeploy the platform workflow, then rerun the job. For a manual Compose deployment, set the same environment variable before recreating the services. Until then the gate fails closed; a failed run can still have logged an evaluation and registered a model version. The pipeline alone assigns `challenger`, never `champion`. Setting the budget or deploying requires the appropriate lab authorization.

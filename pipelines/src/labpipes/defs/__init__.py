@@ -1,4 +1,4 @@
 """Every module in this package is loaded into the Definitions (labpipes.definitions).
 
-Given: zones, trip_files, staging, marts. Built in S1: schema_check, raw_trips, quality, sensor.
+S1 adds a blocking schema contract, idempotent raw COPY, quality evidence, and a file-change sensor.
 """
